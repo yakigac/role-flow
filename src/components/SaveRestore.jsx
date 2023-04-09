@@ -20,6 +20,7 @@ export const SaveRestore = () => {
       id: "1",
       data: { label: "大学生のサポート" },
       position: { x: 100, y: 100 },
+      type: "input",
     },
   ];
   const initialEdges = [];
@@ -103,8 +104,8 @@ export const SaveRestore = () => {
   };
 
   const onClear = useCallback(() => {
-    setNodes([]);
-    setEdges([]);
+    setNodes(initialNodes);
+    setEdges(initialEdges);
   }, []);
 
   const updateNodeLabels = (newNodeIds, labels) => {
@@ -168,13 +169,18 @@ export const SaveRestore = () => {
 
   useEffect(() => {
     if (userSettings.firstItem) {
-      const newNode = {
-        id: "1",
-        data: { label: userSettings.firstItem },
-        position: { x: 100, y: 100 },
-      };
       setNodes((prevNodes) =>
-        prevNodes.map((node) => (node.id === "1" ? newNode : node))
+        prevNodes.map((node) =>
+          node.id === "1"
+            ? {
+                ...node,
+                data: {
+                  ...node.data,
+                  label: userSettings.firstItem, // ユーザーがSettingsで入力したラベルを設定
+                },
+              }
+            : node
+        )
       );
     }
   }, [userSettings.firstItem]);
