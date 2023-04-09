@@ -18,7 +18,7 @@ export const SaveRestore = () => {
   const initialNodes = [
     {
       id: "1",
-      data: { label: "大学生のサポート" },
+      data: { label: "大学生をアシスタントするAI" },
       position: { x: 100, y: 100 },
       type: "input",
     },
@@ -183,7 +183,7 @@ export const SaveRestore = () => {
         )
       );
     }
-  }, [userSettings.firstItem]);
+  }, [userSettings]);
 
   return (
     <div style={{ width: "100vw", height: "100vh" }}>
@@ -210,8 +210,8 @@ export const SaveRestore = () => {
       </ReactFlow>
 
       <div className="save__controls">
-        <button onClick={onSave}>save</button>
-        <button onClick={onRestore}>load</button>
+        <button onClick={onSave}>export</button>
+        <button onClick={onRestore}>import</button>
         <button onClick={onClear}>clear</button>
         <button onClick={handleOpenSettings}>settings</button>
         <input
