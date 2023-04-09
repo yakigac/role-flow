@@ -16,6 +16,73 @@ import "reactflow/dist/style.css";
 
 import "./index.css";
 
+function getTreeLabels(parentLabels) {
+  return parentLabels.join(" > ");
+}
+
+async function fetchGPTLabels(apiKey, parentLabels) {
+  const configuration = new Configuration({
+    apiKey: apiKey, // Update to use userSettings.apiKey
+  });
+  const openai = new OpenAIApi(configuration);
+
+  console.log("parentLabels", parentLabels);
+  const treeLabels = getTreeLabels(parentLabels);
+  const prompt = `## あなたの役割：
+あなたは与えられた役割に対し、ツリー構造を作るイメージで役割の分割を行います。
+目的は、役割をMECEに分担し、単純化することで、その役割を担う人が具体的な作業を行いやすくすることです。
+
+## 過去の作業情報
+現時点までの分解状況は以下の通りです。
+ただし、あなたに知らされているのは直系に辿れる役割のみです。横の役割は含んでいません。
+${treeLabels}
+
+## 業務命令
+過去の作業状況を踏まえて、一番最後の役割を出来る限りMECEかつ具体的な役割に分割してください。
+分割後の役割は、必ず3つにする必要があります。
+出力は下記例のようにカンマ区切りにしてください。
+
+## 出力例
+* 分割後の役割1
+* 分割後の役割2
+* 分割後の役割3
+
+## 開始！
+${parentLabels[parentLabels.length - 1]}を分割する場合、以下のように分割します。
+* `;
+
+  try {
+    const completion = await openai.createChatCompletion({
+      model: "gpt-3.5-turbo",
+      messages: [
+        {
+          role: "user",
+          content: prompt,
+        },
+      ],
+    });
+
+    const responseText = completion.data.choices[0].message.content;
+    console.log("response:", responseText);
+    const fetchedLabels = responseText
+      .trim()
+      .split("*")
+      .map((label) => label.trim());
+
+    return fetchedLabels;
+  } catch (error) {
+    if (error.response) {
+      console.error(
+        `【error ${error.response.status}】 ${error.response.data.error.message}`
+      );
+      return ["Error", "Error", "Error"];
+    } else {
+      console.error(`Error with OpenAI API request: ${error.message}`);
+      return ["Error", "Error", "Error"];
+    }
+  }
+}
+
 const flowKey = "example-flow";
 
 const getId = () => uuidv4();
@@ -79,8 +146,6 @@ const SaveRestore = () => {
 
       // 7. ダウンロードが完了したら、アンカータグをDOMから削除
       document.body.removeChild(downloadLink);
-
-      localStorage.setItem(flowKey, JSON.stringify(flow));
     }
   }, [rfInstance]);
 
@@ -114,73 +179,6 @@ const SaveRestore = () => {
     setNodes([]);
     setEdges([]);
   }, []);
-
-  const configuration = new Configuration({
-    apiKey: userSettings.apiKey, // Update to use userSettings.apiKey
-  });
-  const openai = new OpenAIApi(configuration);
-
-  function getTreeLabels(parentLabels) {
-    return parentLabels.join(" > ");
-  }
-
-  async function fetchGPTLabels(parentLabels) {
-    console.log("parentLabels", parentLabels);
-    const treeLabels = getTreeLabels(parentLabels);
-    const prompt = `## あなたの役割：
-あなたは与えられた役割に対し、ツリー構造を作るイメージで役割の分割を行います。
-目的は、役割をMECEに分担し、単純化することで、その役割を担う人が具体的な作業を行いやすくすることです。
-
-## 過去の作業情報
-現時点までの分解状況は以下の通りです。
-ただし、あなたに知らされているのは直系に辿れる役割のみです。横の役割は含んでいません。
-${treeLabels}
-
-## 業務命令
-過去の作業状況を踏まえて、一番最後の役割を出来る限りMECEかつ具体的な役割に分割してください。
-分割後の役割は、必ず3つにする必要があります。
-出力は下記例のようにカンマ区切りにしてください。
-
-## 出力例
-* 分割後の役割1
-* 分割後の役割2
-* 分割後の役割3
-
-## 開始！
-${parentLabels[parentLabels.length - 1]}を分割する場合、以下のように分割します。
-* `;
-
-    try {
-      const completion = await openai.createChatCompletion({
-        model: "gpt-3.5-turbo",
-        messages: [
-          {
-            role: "user",
-            content: prompt,
-          },
-        ],
-      });
-
-      const responseText = completion.data.choices[0].message.content;
-      console.log("response:", responseText);
-      const fetchedLabels = responseText
-        .trim()
-        .split("*")
-        .map((label) => label.trim());
-
-      return fetchedLabels;
-    } catch (error) {
-      if (error.response) {
-        console.error(
-          `【error ${error.response.status}】 ${error.response.data.error.message}`
-        );
-        return ["Error", "Error", "Error"];
-      } else {
-        console.error(`Error with OpenAI API request: ${error.message}`);
-        return ["Error", "Error", "Error"];
-      }
-    }
-  }
 
   const updateNodeLabels = (newNodeIds, labels) => {
     // newNodesとIDが一致するノードのラベルを更新
@@ -234,7 +232,10 @@ ${parentLabels[parentLabels.length - 1]}を分割する場合、以下のよう�
       parentLabels.unshift(currentNode.data.label);
       currentNode = nodes.find((node) => node.id === currentNode.data.parentId);
     }
-    const fetchedLabels = await fetchGPTLabels(parentLabels);
+    const fetchedLabels = await fetchGPTLabels(
+      userSettings.apiKey,
+      parentLabels
+    );
     updateNodeLabels(newNodeIds, fetchedLabels);
   };
 
