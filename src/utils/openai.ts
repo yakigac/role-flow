@@ -1,10 +1,13 @@
 import { Configuration, OpenAIApi } from "openai";
 
-function getTreeLabels(parentLabels) {
+function getTreeLabels(parentLabels: string[]): string {
   return parentLabels.join(" > ");
 }
 
-export async function fetchGPTLabels(apiKey, parentLabels) {
+export async function fetchGPTLabels(
+  apiKey: string,
+  parentLabels: string[]
+): Promise<string[]> {
   const configuration = new Configuration({
     apiKey: apiKey, // Update to use userSettings.apiKey
   });
@@ -49,8 +52,6 @@ export async function fetchGPTLabels(apiKey, parentLabels) {
     });
 
     const responseText = completion.data.choices[0]?.message?.content || "";
-
-    //completion.data.choices[0].message.content;
     console.log("response:", responseText);
     const fetchedLabels = responseText
       .trim()
