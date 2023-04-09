@@ -136,7 +136,7 @@ export const SaveRestore = () => {
         id: getUniqueId(),
         data: { label: `Loading...`, parentId: data.id },
         position: {
-          x: data.position.x + (nodesWithSameParent.length + i) * 160,
+          x: data.position.x + (nodesWithSameParent.length + i - 1) * 160,
           y: data.position.y + 100,
         },
       };

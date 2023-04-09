@@ -25,7 +25,7 @@ export async function fetchGPTLabels(
   ${treeLabels}
   
   ## 業務命令
-  過去の作業状況を踏まえて、一番最後の役割を出来る限りMECEかつ具体的な役割に分割してください。
+  過去の作業状況を踏まえて、与えられた役割を出来る限りMECEかつ具体的な役割に分割してください。
   分割後の役割は、必ず3つにする必要があります。
   出力は下記例のようにカンマ区切りにしてください。
   
@@ -37,9 +37,7 @@ export async function fetchGPTLabels(
   ## 開始！
 
   （続きから記載してください。）
-  ${
-    parentLabels[parentLabels.length - 1]
-  }を分割する場合、以下の三つに分割します。
+  ${parentLabels[parentLabels.length - 1]}を以下の三つに分割します。
   * `;
 
   try {
