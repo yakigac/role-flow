@@ -103,10 +103,28 @@ export const SaveRestore = () => {
     document.getElementById("file-input").click();
   };
 
+  const resetNodesWithFirstItem = () => {
+    const updatedInitialNodes = [
+      {
+        id: "1",
+        data: {
+          label: userSettings.firstItem
+            ? userSettings.firstItem
+            : "大学生をアシスタントするAI",
+        },
+        position: { x: 100, y: 100 },
+        type: "input",
+      },
+    ];
+    setNodes(updatedInitialNodes);
+  };
+
   const onClear = useCallback(() => {
-    setNodes(initialNodes);
+    resetNodesWithFirstItem();
     setEdges(initialEdges);
-  }, []);
+  }, [userSettings]);
+
+
 
   const updateNodeLabels = (newNodeIds, labels) => {
     // newNodesとIDが一致するノードのラベルを更新
@@ -169,19 +187,7 @@ export const SaveRestore = () => {
 
   useEffect(() => {
     if (userSettings.firstItem) {
-      setNodes((prevNodes) =>
-        prevNodes.map((node) =>
-          node.id === "1"
-            ? {
-                ...node,
-                data: {
-                  ...node.data,
-                  label: userSettings.firstItem, // ユーザーがSettingsで入力したラベルを設定
-                },
-              }
-            : node
-        )
-      );
+      resetNodesWithFirstItem();
     }
   }, [userSettings]);
 
