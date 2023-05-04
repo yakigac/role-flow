@@ -15,14 +15,17 @@ import { getUniqueId } from "/src/utils/uniqueid";
 import "./SaveRestore.css";
 
 export const SaveRestore = () => {
-  const initialNodes = [
-    {
-      id: "1",
-      data: { label: "大学生をアシスタントするAI" },
-      position: { x: 100, y: 100 },
-      type: "input",
-    },
-  ];
+  const getInitialNodes = (label) => {
+    return [
+      {
+        id: "1",
+        data: { label: label ? label : "大学生をアシスタントするAI" },
+        position: { x: 100, y: 100 },
+        type: "input",
+      },
+    ];
+  };
+  const initialNodes = getInitialNodes();
   const initialEdges = [];
 
   const [nodes, setNodes, onNodesChange] = useNodesState(initialNodes);
@@ -103,28 +106,11 @@ export const SaveRestore = () => {
     document.getElementById("file-input").click();
   };
 
-  const resetNodesWithFirstItem = () => {
-    const updatedInitialNodes = [
-      {
-        id: "1",
-        data: {
-          label: userSettings.firstItem
-            ? userSettings.firstItem
-            : "大学生をアシスタントするAI",
-        },
-        position: { x: 100, y: 100 },
-        type: "input",
-      },
-    ];
-    setNodes(updatedInitialNodes);
-  };
-
   const onClear = useCallback(() => {
-    resetNodesWithFirstItem();
+    const updatedInitialNodes = getInitialNodes(userSettings.firstItem);
+    setNodes(updatedInitialNodes);
     setEdges(initialEdges);
   }, [userSettings]);
-
-
 
   const updateNodeLabels = (newNodeIds, labels) => {
     // newNodesとIDが一致するノードのラベルを更新
@@ -186,9 +172,8 @@ export const SaveRestore = () => {
   };
 
   useEffect(() => {
-    if (userSettings.firstItem) {
-      resetNodesWithFirstItem();
-    }
+    const updatedInitialNodes = getInitialNodes(userSettings.firstItem);
+    setNodes(updatedInitialNodes);
   }, [userSettings]);
 
   return (
