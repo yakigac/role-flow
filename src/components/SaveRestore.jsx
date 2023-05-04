@@ -1,4 +1,4 @@
-import React, { useState, useCallback, useEffect } from "react";
+import React, { useState, useCallback } from "react";
 import ReactFlow, {
   MiniMap,
   Controls,
@@ -40,6 +40,8 @@ export const SaveRestore = () => {
 
   const handleSaveSettings = (settings) => {
     setUserSettings(settings);
+    const updatedInitialNodes = getInitialNodes(settings.firstItem);
+    setNodes(updatedInitialNodes);
     setSettingsVisible(false);
   };
 
@@ -52,7 +54,7 @@ export const SaveRestore = () => {
     []
   );
 
-  const onSave = useCallback(() => {
+  const onExport = useCallback(() => {
     if (rfInstance) {
       // 1. フローのデータをオブジェクトに変換
       const flow = rfInstance.toObject();
@@ -171,11 +173,6 @@ export const SaveRestore = () => {
     updateNodeLabels(newNodeIds, fetchedLabels);
   };
 
-  useEffect(() => {
-    const updatedInitialNodes = getInitialNodes(userSettings.firstItem);
-    setNodes(updatedInitialNodes);
-  }, [userSettings]);
-
   return (
     <div style={{ width: "100vw", height: "100vh" }}>
       {settingsVisible && (
@@ -201,7 +198,7 @@ export const SaveRestore = () => {
       </ReactFlow>
 
       <div className="save__controls">
-        <button onClick={onSave}>export</button>
+        <button onClick={onExport}>export</button>
         <button onClick={onRestore}>import</button>
         <button onClick={onClear}>clear</button>
         <button onClick={handleOpenSettings}>settings</button>

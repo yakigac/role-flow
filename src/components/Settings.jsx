@@ -1,4 +1,5 @@
 import React, { useState } from "react";
+import PropTypes from "prop-types";
 import "./Settings.css";
 
 const Settings = ({ onSave, onClose, propApiKey, propFirstItem }) => {
@@ -16,6 +17,7 @@ const Settings = ({ onSave, onClose, propApiKey, propFirstItem }) => {
         <label>
           <a
             target="_blank"
+            rel="noopener noreferrer"
             href="https://platform.openai.com/account/api-keys"
           >
             OPENAI API KEY:
@@ -41,6 +43,13 @@ const Settings = ({ onSave, onClose, propApiKey, propFirstItem }) => {
       </div>
     </div>
   );
+};
+
+Settings.propTypes = {
+  onSave: PropTypes.func.isRequired,
+  onClose: PropTypes.func.isRequired,
+  propApiKey: PropTypes.string.isRequired,
+  propFirstItem: PropTypes.string.isRequired,
 };
 
 export default Settings;
