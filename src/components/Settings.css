@@ -1,3 +1,9 @@
+:root {
+  --settings-content-bg-color: #1a1a1a;
+  --settings-content-text-color: rgba(255, 255, 255, 0.87);
+  --settings-content-input-border-color: #444;
+}
+
 .settings-modal {
   display: flex;
   justify-content: center;
@@ -15,7 +21,8 @@
   display: flex;
   flex-direction: column;
   width: 300px;
-  background-color: white;
+  background-color: var(--settings-content-bg-color);
+  color: var(--settings-content-text-color);
   padding: 20px;
   border-radius: 5px;
   box-shadow: 0 0 10px rgba(0, 0, 0, 0.2);
@@ -31,7 +38,7 @@
 .settings-content input {
   padding: 5px;
   font-size: 14px;
-  border: 1px solid #ccc;
+  border: 1px solid var(--settings-content-input-border-color);
   border-radius: 3px;
 }
 
@@ -42,4 +49,12 @@
 
 .buttons button {
   margin-left: 10px;
+}
+
+@media (prefers-color-scheme: light) {
+  :root {
+    --settings-content-bg-color: #ffffff;
+    --settings-content-text-color: #213547;
+    --settings-content-input-border-color: #ccc;
+  }
 }
