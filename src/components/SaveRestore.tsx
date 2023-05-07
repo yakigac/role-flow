@@ -7,15 +7,23 @@ import ReactFlow, {
   useEdgesState,
   addEdge,
   useReactFlow,
+  ReactFlowInstance,
+  Node,
+  Edge,
+  BackgroundVariant,
 } from "reactflow";
-
 import Settings from "./Settings";
-import { fetchGPTLabels } from "/src/utils/openai";
-import { getUniqueId } from "/src/utils/uniqueid";
+import { fetchGPTLabels } from "../utils/openai";
+import { getUniqueId } from "../utils/uniqueid";
 import "./SaveRestore.css";
 
-export const SaveRestore = () => {
-  const getInitialNodes = (label) => {
+interface UserSettings {
+  apiKey: string;
+  firstItem: string;
+}
+
+export const SaveRestore: React.FC = () => {
+  const getInitialNodes = (label?: string): Node[] => {
     return [
       {
         id: "1",
@@ -30,15 +38,15 @@ export const SaveRestore = () => {
 
   const [nodes, setNodes, onNodesChange] = useNodesState(initialNodes);
   const [edges, setEdges, onEdgesChange] = useEdgesState(initialEdges);
-  const [rfInstance, setRfInstance] = useState(null);
+  const [rfInstance, setRfInstance] = useState<ReactFlowInstance>();
   const { setViewport } = useReactFlow();
   const [settingsVisible, setSettingsVisible] = useState(true);
-  const [userSettings, setUserSettings] = useState({
+  const [userSettings, setUserSettings] = useState<UserSettings>({
     apiKey: "",
     firstItem: "",
   });
 
-  const handleSaveSettings = (settings) => {
+  const handleSaveSettings = (settings: UserSettings) => {
     setUserSettings(settings);
     const updatedInitialNodes = getInitialNodes(settings.firstItem);
     setNodes(updatedInitialNodes);
@@ -56,47 +64,37 @@ export const SaveRestore = () => {
 
   const onExport = useCallback(() => {
     if (rfInstance) {
-      // 1. フローのデータをオブジェクトに変換
       const flow = rfInstance.toObject();
-
-      // 2. オブジェクトを整形されたJSON文字列に変換（インデントを使用して読みやすくします）
       const flowData = JSON.stringify(flow, null, 2);
-
-      // 3. JSON文字列をBlobオブジェクトに変換（ファイルとして扱うため）
       const blob = new Blob([flowData], { type: "application/json" });
-
-      // 4. Blobオブジェクトからダウンロード用のURLを作成
       const url = URL.createObjectURL(blob);
-
-      // 5. ダウンロードをトリガーするためのアンカータグ（<a>）を作成
       const downloadLink = document.createElement("a");
       downloadLink.href = url;
-      downloadLink.download = "flow-data.json"; // ダウンロードされるファイルの名前を設定
-
-      // 6. アンカータグをDOMに追加し、クリックイベントを発火させることでダウンロードを開始
+      downloadLink.download = "flow-data.json";
       document.body.appendChild(downloadLink);
       downloadLink.click();
-
-      // 7. ダウンロードが完了したら、アンカータグをDOMから削除
       document.body.removeChild(downloadLink);
     }
   }, [rfInstance]);
 
-  const handleFileUpload = async (e) => {
-    const file = e.target.files[0];
+  const handleFileUpload = async (e: React.ChangeEvent<HTMLInputElement>) => {
+    const file = e.target.files && e.target.files[0];
 
     if (file) {
       const reader = new FileReader();
 
       reader.onload = (e) => {
-        const json = e.target.result;
-        const flow = JSON.parse(json);
+        const json = e.target?.result;
 
-        if (flow) {
-          const { x = 0, y = 0, zoom = 1 } = flow.viewport;
-          setNodes(flow.nodes || []);
-          setEdges(flow.edges || []);
-          setViewport({ x, y, zoom });
+        if (json) {
+          const flow = JSON.parse(json as string);
+
+          if (flow) {
+            const { x = 0, y = 0, zoom = 1 } = flow.viewport;
+            setNodes(flow.nodes || []);
+            setEdges(flow.edges || []);
+            setViewport({ x, y, zoom });
+          }
         }
       };
 
@@ -105,7 +103,10 @@ export const SaveRestore = () => {
   };
 
   const onRestore = () => {
-    document.getElementById("file-input").click();
+    const fileInputElement = document.getElementById("file-input");
+    if (fileInputElement) {
+      fileInputElement.click();
+    }
   };
 
   const onClear = useCallback(() => {
@@ -114,13 +115,14 @@ export const SaveRestore = () => {
     setEdges(initialEdges);
   }, [userSettings]);
 
-  const updateNodeLabels = (newNodeIds, labels) => {
-    // newNodesとIDが一致するノードのラベルを更新
-    setNodes((prevNodes) => {
+  const updateNodeLabels = (newNodeIds: string[], labels: string[]) => {
+    setNodes((prevNodes: Node[]) => {
       const updatedNodes = prevNodes.map((node) => {
         if (newNodeIds.includes(node.id)) {
           const label = labels.shift();
-          return { ...node, data: { ...node.data, label } };
+          if (label) {
+            return { ...node, data: { ...node.data, label } };
+          }
         }
         return node;
       });
@@ -128,14 +130,14 @@ export const SaveRestore = () => {
     });
   };
 
-  const handleNodeClick = async (e, data) => {
+  const handleNodeClick = async (e: React.MouseEvent, data: Node) => {
     const nodesWithSameParent = nodes.filter(
       (node) => node?.data?.parentId === data?.id
     );
 
-    let newNodes = [];
-    let newNodeIds = [];
-    let newEdges = [];
+    const newNodes: Node[] = [];
+    const newNodeIds: string[] = [];
+    const newEdges: Edge[] = [];
 
     for (let i = 0; i < 3; i++) {
       const newNode = {
@@ -160,11 +162,14 @@ export const SaveRestore = () => {
     setNodes((prevNodes) => [...prevNodes, ...newNodes]);
     setEdges((prevEdges) => [...prevEdges, ...newEdges]);
 
-    let currentNode = data;
-    let parentLabels = [];
+    let currentNode: Node | undefined = data;
+    const parentLabels: string[] = [];
     while (currentNode) {
       parentLabels.unshift(currentNode.data.label);
-      currentNode = nodes.find((node) => node.id === currentNode.data.parentId);
+      const parentId = currentNode.data.parentId;
+      currentNode = parentId
+        ? nodes.find((node) => node.id === parentId)
+        : undefined;
     }
     const fetchedLabels = await fetchGPTLabels(
       userSettings.apiKey,
@@ -194,7 +199,7 @@ export const SaveRestore = () => {
       >
         <Controls />
         <MiniMap />
-        <Background variant="dots" gap={12} size={1} />
+        <Background variant={BackgroundVariant.Dots} gap={12} size={1} />
       </ReactFlow>
 
       <div className="save__controls">
