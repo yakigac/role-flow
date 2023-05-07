@@ -13,6 +13,7 @@ import ReactFlow, {
   BackgroundVariant,
 } from "reactflow";
 import Settings from "./Settings";
+import MyControls from "./MyControls";
 import { fetchGPTLabels } from "../utils/openai";
 import { getUniqueId } from "../utils/uniqueid";
 import "./SaveRestore.css";
@@ -202,18 +203,13 @@ export const SaveRestore: React.FC = () => {
         <Background variant={BackgroundVariant.Dots} gap={12} size={1} />
       </ReactFlow>
 
-      <div className="save__controls">
-        <button onClick={onExport}>export</button>
-        <button onClick={onRestore}>import</button>
-        <button onClick={onClear}>clear</button>
-        <button onClick={handleOpenSettings}>settings</button>
-        <input
-          type="file"
-          id="file-input"
-          style={{ display: "none" }}
-          onChange={handleFileUpload}
-        />
-      </div>
+      <MyControls
+        onExport={onExport}
+        onRestore={onRestore}
+        onClear={onClear}
+        handleOpenSettings={handleOpenSettings}
+        handleFileUpload={handleFileUpload}
+      />
     </div>
   );
 };
