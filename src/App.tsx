@@ -3,7 +3,7 @@ import { ReactFlowProvider } from "reactflow";
 import { SaveRestore } from "./components/SaveRestore";
 import "reactflow/dist/style.css";
 
-export default () => (
+export const App = () => (
   <ReactFlowProvider>
     <SaveRestore />
   </ReactFlowProvider>
