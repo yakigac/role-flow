@@ -1,4 +1,4 @@
-import React, { useState, useCallback, useMemo } from "react";
+import React, { useState, useEffect, useCallback, useMemo } from "react";
 import ReactFlow, {
   MiniMap,
   Controls,
@@ -40,11 +40,12 @@ export const SaveRestore: React.FC = () => {
   const [nodes, setNodes, onNodesChange] = useNodesState(initialNodes);
   const [edges, setEdges, onEdgesChange] = useEdgesState(initialEdges);
   const [rfInstance, setRfInstance] = useState<ReactFlowInstance>();
-  const { setViewport } = useReactFlow();
+  const { fitView } = useReactFlow();
   const [settingsVisible, setSettingsVisible] = useState(true);
   const [userSettings, setUserSettings] = useState<UserSettings>({
     apiKey: "",
   });
+  const [refitFlag, setRefitFlag] = useState(false);
 
   const updateNodeData = (nodeId: string, newLabel: string) => {
     setNodes((prevNodes: Node[]) =>
@@ -111,10 +112,9 @@ export const SaveRestore: React.FC = () => {
           const flow = JSON.parse(json as string);
 
           if (flow) {
-            const { x = 0, y = 0, zoom = 1 } = flow.viewport;
             setNodes(flow.nodes || []);
             setEdges(flow.edges || []);
-            setViewport({ x, y, zoom });
+            setRefitFlag(true);
           }
         }
       };
@@ -141,7 +141,8 @@ export const SaveRestore: React.FC = () => {
       setNodes(updatedInitialNodes);
       setEdges([]);
     }
-  }, [userSettings, nodes]);
+    setRefitFlag(true);
+  }, [nodes]);
 
   const updateNodeLabels = (newNodeIds: string[], labels: string[]) => {
     setNodes((prevNodes: Node[]) => {
@@ -206,6 +207,11 @@ export const SaveRestore: React.FC = () => {
     updateNodeLabels(newNodeIds, fetchedLabels);
   };
 
+  useEffect(() => {
+    fitView({ padding: 2 });
+    setRefitFlag(false);
+  }, [refitFlag]);
+
   return (
     <div style={{ width: "100vw", height: "100vh" }}>
       {settingsVisible && (
@@ -224,6 +230,7 @@ export const SaveRestore: React.FC = () => {
         onInit={setRfInstance}
         onNodeClick={handleNodeClick}
         nodeTypes={nodeTypes}
+        fitView
       >
         <Controls />
         <MiniMap />

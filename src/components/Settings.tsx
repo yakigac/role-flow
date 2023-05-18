@@ -1,8 +1,13 @@
-import React, { useState } from "react";
-import PropTypes from "prop-types";
+import React, { useState, FC } from "react";
 import "./Settings.css";
 
-const Settings = ({ onSave, onClose, propApiKey }) => {
+interface SettingsProps {
+  onSave: (settings: { apiKey: string }) => void;
+  onClose: () => void;
+  propApiKey: string;
+}
+
+const Settings: FC<SettingsProps> = ({ onSave, onClose, propApiKey }) => {
   const [apiKey, setApiKey] = useState(propApiKey);
 
   const handleSave = () => {
@@ -34,12 +39,6 @@ const Settings = ({ onSave, onClose, propApiKey }) => {
       </div>
     </div>
   );
-};
-
-Settings.propTypes = {
-  onSave: PropTypes.func.isRequired,
-  onClose: PropTypes.func.isRequired,
-  propApiKey: PropTypes.string.isRequired,
 };
 
 export default Settings;
