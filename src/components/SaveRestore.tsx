@@ -64,6 +64,9 @@ export const SaveRestore: React.FC = () => {
       default: (props: NodeProps) => (
         <EditableNode {...props} updateNodeData={updateNodeData} />
       ),
+      input: (
+        props: NodeProps // ← Add this line
+      ) => <EditableNode {...props} updateNodeData={updateNodeData} />,
     }),
     []
   );

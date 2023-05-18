@@ -9,9 +9,10 @@ interface EditableNodeProps extends NodeProps {
 }
 
 const EditableNode: React.FC<EditableNodeProps> = (props) => {
-  const { data, id, updateNodeData } = props;
+  const { data, id, updateNodeData, type } = props;
   const [isEditing, setIsEditing] = useState(false);
   const [label, setLabel] = useState(data.label);
+  const isInput = type === "input"; // Inputノードかどうかを判定
 
   // Update the label state when the data.label prop changes
   useEffect(() => {
@@ -47,7 +48,7 @@ const EditableNode: React.FC<EditableNodeProps> = (props) => {
             />
           </form>
           <Handle type="source" position={Position.Bottom} />
-          <Handle type="target" position={Position.Top} />
+          {!isInput && <Handle type="target" position={Position.Top} />}
         </>
       ) : (
         <>
@@ -56,7 +57,7 @@ const EditableNode: React.FC<EditableNodeProps> = (props) => {
             <AiFillEdit onClick={handleEditClick} />
           </div>
           <Handle type="source" position={Position.Bottom} />
-          <Handle type="target" position={Position.Top} />
+          {!isInput && <Handle type="target" position={Position.Top} />}
         </>
       )}
     </div>
