@@ -2,7 +2,7 @@
 
 import React, { useState, useEffect } from "react";
 import { Handle, Position, NodeProps } from "reactflow";
-
+import { AiFillEdit } from "react-icons/ai";
 interface EditableNodeProps extends NodeProps {
   data: { label: string; parentId?: string };
   updateNodeData: (nodeId: string, newLabel: string) => void;
@@ -51,8 +51,10 @@ const EditableNode: React.FC<EditableNodeProps> = (props) => {
         </>
       ) : (
         <>
-          <div>{data.label}</div>
-          <button onClick={handleEditClick}>Edit</button>
+          <div>
+            {data.label + " "}
+            <AiFillEdit onClick={handleEditClick} />
+          </div>
           <Handle type="source" position={Position.Bottom} />
           <Handle type="target" position={Position.Top} />
         </>
