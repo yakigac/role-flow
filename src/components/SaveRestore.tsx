@@ -1,4 +1,4 @@
-import React, { useState, useCallback } from "react";
+import React, { useState, useCallback, useMemo } from "react";
 import ReactFlow, {
   MiniMap,
   Controls,
@@ -11,13 +11,14 @@ import ReactFlow, {
   Node,
   Edge,
   BackgroundVariant,
+  NodeProps,
 } from "reactflow";
 import Settings from "./Settings";
 import MyControls from "./MyControls";
 import { fetchGPTLabels } from "../utils/openai";
 import { getUniqueId } from "../utils/uniqueid";
 import "./SaveRestore.css";
-
+import EditableNode from "./EditableNode";
 interface UserSettings {
   apiKey: string;
   firstItem: string;
@@ -46,6 +47,26 @@ export const SaveRestore: React.FC = () => {
     apiKey: "",
     firstItem: "",
   });
+
+  const updateNodeData = (nodeId: string, newLabel: string) => {
+    setNodes((prevNodes: Node[]) =>
+      prevNodes.map((node) => {
+        if (node.id === nodeId) {
+          return { ...node, data: { ...node.data, label: newLabel } };
+        }
+        return node;
+      })
+    );
+  };
+
+  const nodeTypes = useMemo(
+    () => ({
+      default: (props: NodeProps) => (
+        <EditableNode {...props} updateNodeData={updateNodeData} />
+      ),
+    }),
+    []
+  );
 
   const handleSaveSettings = (settings: UserSettings) => {
     setUserSettings(settings);
@@ -197,6 +218,7 @@ export const SaveRestore: React.FC = () => {
         onConnect={onConnect}
         onInit={setRfInstance}
         onNodeClick={handleNodeClick}
+        nodeTypes={nodeTypes}
       >
         <Controls />
         <MiniMap />
