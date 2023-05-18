@@ -1,6 +1,6 @@
 // EditableNode.tsx
 
-import React, { useState } from "react";
+import React, { useState, useEffect } from "react";
 import { Handle, Position, NodeProps } from "reactflow";
 
 interface EditableNodeProps extends NodeProps {
@@ -13,6 +13,11 @@ const EditableNode: React.FC<EditableNodeProps> = (props) => {
   const [isEditing, setIsEditing] = useState(false);
   const [label, setLabel] = useState(data.label);
 
+  // Update the label state when the data.label prop changes
+  useEffect(() => {
+    setLabel(data.label);
+  }, [data.label]);
+
   const handleEditClick = (event: React.MouseEvent) => {
     event.stopPropagation(); // Prevents the event from bubbling up
     setIsEditing(true);
@@ -24,7 +29,7 @@ const EditableNode: React.FC<EditableNodeProps> = (props) => {
   };
 
   const handleSubmit = (event: React.FormEvent) => {
-    event.preventDefault(); // これはフォームのデフォルトの送信動作を防ぎます。
+    event.preventDefault(); // Prevents the form from being submitted
     setIsEditing(false);
     updateNodeData(id, label); // Update the node data using the callback function
   };
