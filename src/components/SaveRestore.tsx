@@ -21,7 +21,6 @@ import "./SaveRestore.css";
 import EditableNode from "./EditableNode";
 interface UserSettings {
   apiKey: string;
-  firstItem: string;
 }
 
 export const SaveRestore: React.FC = () => {
@@ -29,7 +28,7 @@ export const SaveRestore: React.FC = () => {
     return [
       {
         id: "1",
-        data: { label: label ? label : "大学生をアシスタントするAI" },
+        data: { label: label ? label : "全知全能の神" },
         position: { x: 100, y: 100 },
         type: "input",
       },
@@ -45,7 +44,6 @@ export const SaveRestore: React.FC = () => {
   const [settingsVisible, setSettingsVisible] = useState(true);
   const [userSettings, setUserSettings] = useState<UserSettings>({
     apiKey: "",
-    firstItem: "",
   });
 
   const updateNodeData = (nodeId: string, newLabel: string) => {
@@ -64,17 +62,15 @@ export const SaveRestore: React.FC = () => {
       default: (props: NodeProps) => (
         <EditableNode {...props} updateNodeData={updateNodeData} />
       ),
-      input: (
-        props: NodeProps // ← Add this line
-      ) => <EditableNode {...props} updateNodeData={updateNodeData} />,
+      input: (props: NodeProps) => (
+        <EditableNode {...props} updateNodeData={updateNodeData} />
+      ),
     }),
     []
   );
 
   const handleSaveSettings = (settings: UserSettings) => {
     setUserSettings(settings);
-    const updatedInitialNodes = getInitialNodes(settings.firstItem);
-    setNodes(updatedInitialNodes);
     setSettingsVisible(false);
   };
 
@@ -135,10 +131,17 @@ export const SaveRestore: React.FC = () => {
   };
 
   const onClear = useCallback(() => {
-    const updatedInitialNodes = getInitialNodes(userSettings.firstItem);
-    setNodes(updatedInitialNodes);
-    setEdges(initialEdges);
-  }, [userSettings]);
+    const inputNode = nodes.find((node) => node.type === "input");
+    if (inputNode) {
+      const updatedInitialNodes = getInitialNodes(inputNode.data.label);
+      setNodes(updatedInitialNodes);
+      setEdges([]);
+    } else {
+      const updatedInitialNodes = getInitialNodes();
+      setNodes(updatedInitialNodes);
+      setEdges([]);
+    }
+  }, [userSettings, nodes]);
 
   const updateNodeLabels = (newNodeIds: string[], labels: string[]) => {
     setNodes((prevNodes: Node[]) => {
@@ -210,7 +213,6 @@ export const SaveRestore: React.FC = () => {
           onSave={handleSaveSettings}
           onClose={() => setSettingsVisible(false)}
           propApiKey={userSettings.apiKey}
-          propFirstItem={userSettings.firstItem}
         />
       )}
       <ReactFlow
